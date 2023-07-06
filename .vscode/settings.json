@@ -1,0 +1,22 @@
+{
+    "files.associations": {
+        "errno.h": "c",
+        "string.h": "c",
+        "time.h": "c",
+        "hash.h": "c",
+        "stdio.h": "c",
+        "stdlib.h": "c",
+        "typeinfo": "c",
+        "cstdio": "c",
+        "cmath": "c",
+        "error.h": "c",
+        "cerrno": "c",
+        "lasm_instruction.h": "c",
+        "lasm_file.h": "c",
+        "lasm_string.h": "c",
+        "lasm_hash.h": "c",
+        "lasm_translate.h": "c",
+        "stdio_lim.h": "c"
+    },
+    "cmake.configureOnOpen": false
+}
