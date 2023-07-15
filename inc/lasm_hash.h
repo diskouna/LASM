@@ -1,6 +1,7 @@
 #ifndef __LASM_HASH__
 #define __LASM_HASH__
 
+
 #include <stdint.h>
 
 #define HASH_TABLE_SIZE 257

@@ -6,10 +6,6 @@
 #include "lasm_hash.h"
 #include "lasm_string.h"
 
-extern  uint16_t programCounter;
-extern int programCounterStart;
-extern unsigned int instructionCount;
-extern char line[LINE_MAX];
 
 parseStatus (*parseDirective[])(char *arguments) = {
     &parseBlkwDirective,
@@ -71,7 +67,7 @@ parseStatus parseLine(char *instruction)  // don't need lineCount
             return parseInstruction[type](arguments);                        
         } 
         if (isStringValidLabel(token)) {
-            if (programCounterStart == -1) 
+            if (programCounterStart == UNDEFINED_ADDRESS) 
                 return (parseStatus){.type=LABEL_BEFORE_PROGRAM_STARTING_ADDRESS, 
                                      .token=token };
             hashAddStatus status = addLabelToSymbolTable(token);
@@ -102,7 +98,7 @@ parseStatus parseOrigDirective(char *arguments)
     if (arguments == NULL) 
         return (parseStatus){.type=FEW_ARGUMENT, .token=NULL};
     
-    if (programCounterStart != -1)  
+    if (programCounterStart != UNDEFINED_ADDRESS)  
         return  (parseStatus){.type=MULTIPLE_PROGRAM_STARTING_ADDRESS, 
                               .token=NULL};  
 
@@ -178,13 +174,14 @@ parseStatus parseEndDirective(char *arguments)
 {
     if (arguments != NULL) return (parseStatus){.type=FEW_ARGUMENT, 
                                                 .token=NULL};                                
-    if (programCounterStart == -1) 
+    if (programCounterStart == UNDEFINED_ADDRESS) 
         return (parseStatus){.type=UNDEFINED_PROGRAM_STARTING_ADDRESS, 
                              .token=NULL};                 
     return (parseStatus){.type=END_OF_FILE_REACH, .token=NULL}; 
 }
 
-// Type 1 instruction : instr = OPCODE R0,R1,R2|IMM5 
+// Type 1 instruction :: [LABEL] OPCODE REGISTER1, REGISTER2, REGISTER3 | 5BIT_IMMEDIATE_VALUE [COMMENTS]
+//                    arguments: REGISTER1, REGISTER2, REGISTER3 | 5BIT_IMMEDIATE_VALUE
 parseStatus parseType1Instruction(char *arguments)
 {
     if (arguments == NULL) 
@@ -212,7 +209,8 @@ parseStatus parseType1Instruction(char *arguments)
 
     return (parseStatus){.type=SUCCESS, .token=NULL};
 }
-// Type 2 instruction : instr = OPCODE LABEL
+// Type 2 instruction :: [LABEL] OPCODE LABEL [COMMENTS]
+//                    arguments = LABEL
 parseStatus parseType2Instruction(char *arguments)
 {
     if (arguments == NULL) 
@@ -229,7 +227,8 @@ parseStatus parseType2Instruction(char *arguments)
     return (parseStatus){.type=SUCCESS, .token=NULL};
 }
 
-// Type 3 instruction :  instr : OPCODE R0
+// Type 3 instruction :: [LABEL] OPCODE REGISTER [COMMENTS]
+//                    arguments = REGISTER
 parseStatus parseType3Instruction(char *arguments)
 {
     if (arguments == NULL) 
@@ -245,7 +244,8 @@ parseStatus parseType3Instruction(char *arguments)
                              .token=token};
     return (parseStatus){.type=SUCCESS, .token=NULL};
 }
-// Type 4 instruction : instr : OPCODE
+// Type 4 instruction :: [LABEL] OPCODE [COMMENTS]
+//                    arguments =   NULL
 parseStatus parseType4Instruction(char *arguments)
 {
     char *token = getFirstToken(arguments);
@@ -254,7 +254,8 @@ parseStatus parseType4Instruction(char *arguments)
                              .token=token};    
     return (parseStatus){.type=SUCCESS, .token=NULL};
 }
-// Type 5 instruction : instr: OPCODE R0 LABEL
+// Type 5 instruction :: [LABEL] OPCODE REGISTER, LABEL [COMMENTS]
+//                    arguments = REGISTER, LABEL
 parseStatus parseType5Instruction(char *arguments)
 {
     if (arguments == NULL) 
@@ -275,7 +276,8 @@ parseStatus parseType5Instruction(char *arguments)
     return (parseStatus){.type=SUCCESS, .token=NULL};
 }
 
-// Type 6 instruction : instr: OPCODE R0,R1
+// Type 6 instruction :: [LABEL] OPCODE REGISTER1, REGISTER2 [COMMENT]
+//                    arguments = REGISTER1, REGISTER2  
 parseStatus parseType6Instruction(char *arguments)
 {
     if (arguments == NULL) 
@@ -297,7 +299,8 @@ parseStatus parseType6Instruction(char *arguments)
     return (parseStatus){.type=SUCCESS, .token=NULL};
 }
 
-// Type 7 instruction : instr: OPCODE R0,R1,offset6
+// Type 7 instruction :: [LABEL] OPCODE REGISTER1, REGISTER2, OFFSET6 [COMMENTS]
+//                    arguments =  REGISTER1, REGISTER2, OFFSET6
 parseStatus parseType7Instruction(char *arguments)
 {
     if (arguments == NULL) 
@@ -324,7 +327,8 @@ parseStatus parseType7Instruction(char *arguments)
     return (parseStatus){.type=SUCCESS, .token=NULL};
 }
 
-// Type 8 instruction : instr : OPCODE TRAPVECTOR8
+// Type 8 instruction :: [LABEL] OPCODE TRAPVECTOR8 [COMMENTS]
+//                    arguments =  TRAPVECTOR8
 parseStatus parseType8Instruction(char *arguments)
 {
     if (arguments == NULL) 
@@ -341,6 +345,7 @@ parseStatus parseType8Instruction(char *arguments)
                              .token=token};
     return (parseStatus){.type=SUCCESS, .token=NULL};
 }
+
 parseStatus parseAddInstruction(char *arguments)
 {
    return parseType1Instruction(arguments);
@@ -443,44 +448,43 @@ void printParseErrorMessage(parseStatus status)
     switch(status.type){
         case END_OF_FILE_REACH                 :      ;
         case SUCCESS                           : break;
-        case INVALID_NUMBER             : printErrorMessage("INVALID_NUMERIC_VALUE ");
-                                            break;
-        case INVALID_REGISTER                  : printErrorMessage("INVALID_REGISTER ");
-                                            break; 
-        case INVALID_REGISTER_OR_NUMBER : printErrorMessage("INVALID_REGISTER_OR_IMM5_VALUE ");
-                                            break;
-        case INVALID_LABEL                     : printErrorMessage("INVALID_LABEL ");
-                                            break;          
-        case INVALID_LABEL_OR_NUMBER           : printErrorMessage("INVALID_LABEL_OR_NUMBER ");
-                                            break;
-        case DUPPLICATE_LABEL                  : printErrorMessage("DUPPLICATE_LABEL ");
-                                            break;
-        case UNDEFINED_LABEL                   : printErrorMessage("UNDEFINED_LABEL ");
-                                            break;
-        case INUTILE_LABEL                     : printErrorMessage("INUTILE_LABEL ");
-                                            break;
-        case TOO_MANY_ARGUMENTS                : printErrorMessage("TOO_MANY_ARGUMENTS ");
-                                            break;
-        case FEW_ARGUMENT                      : printErrorMessage("FEW_ARGUMENT");
-                                            break;
-        case INVALID_PROGRAM_STARTING_ADDRESS  : printErrorMessage("INVALID_PROGRAM_STARTING_ADDRESS");
-                                            break;
-        case MULTIPLE_PROGRAM_STARTING_ADDRESS : printErrorMessage(" MULTIPLE_PROGRAM_STARTING_ADDRESS");
-                                            break; 
-        case INVALID_STRING                    : printErrorMessage(" INVALID_STRING");
-                                            break;  
-        case UNDEFINED_PROGRAM_STARTING_ADDRESS: printErrorMessage(" \".ORIG\" is not found! ");
-                                            break; 
-        case UNDEFINED_TOKEN              : printErrorMessage("UNDEFINED_TOKEN_FOUND");
-                                            break;  
-        case LABEL_BEFORE_PROGRAM_STARTING_ADDRESS : printErrorMessage("\".ORIG\" is not found yet!"
-                                        "\".ORIG\" must be at the beginning of the source file ");
-                                            break;  
-        case CANNOT_ADD_LABEL_TO_SYMBOL_TABLE :  printErrorMessage(" CANNOT_ADD_LABEL_TO_SYMBOL_TABLE ");
-                                            break;                                                                                        
-        default                           : printErrorMessage("INVALID ERROR %d", status.type);
+        case INVALID_NUMBER                    : printErrorMessage("invalid numeric value");
+                                                 break;
+        case INVALID_REGISTER                  : printErrorMessage("invalid register");
+                                                 break; 
+        case INVALID_REGISTER_OR_NUMBER        : printErrorMessage("invalid register or immediate value");
+                                                 break;
+        case INVALID_LABEL                     : printErrorMessage("invalid label");
+                                                 break;          
+        case INVALID_LABEL_OR_NUMBER           : printErrorMessage("invalid label or numeric value");
+                                                 break;
+        case DUPPLICATE_LABEL                  : printErrorMessage("dupplicate label");
+                                                 break;
+        case UNDEFINED_LABEL                   : printErrorMessage("undefined label");
+                                                 break;
+        case INUTILE_LABEL                     : printErrorMessage("inutile label");
+                                                 break;
+        case TOO_MANY_ARGUMENTS                : printErrorMessage("too many arguments");
+                                                 break;
+        case FEW_ARGUMENT                      : printErrorMessage("few argument");
+                                                 break;
+        case INVALID_PROGRAM_STARTING_ADDRESS  : printErrorMessage("invalid program starting address");
+                                                 break;
+        case MULTIPLE_PROGRAM_STARTING_ADDRESS : printErrorMessage("multiple program starting address");
+                                                 break; 
+        case INVALID_STRING                    : printErrorMessage("invalid string");
+                                                 break;  
+        case UNDEFINED_PROGRAM_STARTING_ADDRESS: printErrorMessage("undefined program starting address");
+                                                 break; 
+        case UNDEFINED_TOKEN                   : printErrorMessage("undefined token found");
+                                                 break;  
+        case LABEL_BEFORE_PROGRAM_STARTING_ADDRESS : printErrorMessage("undefined program starting address before encountered label");
+                                                 break;  
+        case CANNOT_ADD_LABEL_TO_SYMBOL_TABLE   : printErrorMessage("cannot add label to symbol table");
+                                                 break;                                                                                        
+        default                                 : printErrorMessage("UNHANDLED ERROR %d", status.type);
     } 
     if (status.token != NULL)
-        printf("[%s]", status.token);
+        printf(" [%s]", status.token);
     printf("\n");
 }

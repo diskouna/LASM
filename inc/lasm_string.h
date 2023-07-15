@@ -2,12 +2,16 @@
 #define __LASM_STRING__
 
 #include <stdint.h>
-// define word = int16_t 
+// TODO : define word = int16_t 
 
-int isStringValidLabel(char* token);
-int isStringValidOpcode(char *str);
-int isStringValidAsmDirective(char *str);
-int isStringValidRegister(char *str);
+void removeCommentInLine(char *line);
+
+// use "line" buffer
+char *getFirstToken(char *instruction);
+// use "line" buffer
+char *getNextToken();
+// use "line" buffer 
+char *getArguments();
 
 int isBlankSubstring(char *start, char *end);
 int isBlankString(char *str);
@@ -17,15 +21,16 @@ int isAlphaNumericString(char *str);
 size_t lengthOfQuotedString(char *str);
 size_t lengthOfSubstring(char *star, char *end);
 
-char *getFirstToken(char *instruction);
-char *getNextToken();
-char *getArguments();
+int isStringValidLabel(char* token);
+int isStringValidOpcode(char *str);
+int isStringValidAsmDirective(char *str);
 
-void removeCommentInLine(char *line);
+int isStringValidRegister(char *str);
+int convertRegisterToNumber(char *reg);
 
 int isStringValidWord(char *str);
-// rename : getWordValue
 int32_t convertStringToNumber(char *str);
+
 int isNBitsWidthSignedValue(int16_t number, uint8_t n);
 int isNBitsWidthUnsignedValue(uint16_t number, uint8_t n);
 int isStringValidPC(char *token);
@@ -40,7 +45,5 @@ int isStringValidOffset6(char *token);
 int isNumberValidTrapvector8(int number);
 int isStringValidTrapvector8(char *token);
 int isNumberValidPC(int number);
-
-int convertRegisterToNumber(char *reg);
 
 #endif // __LASM_STRING__

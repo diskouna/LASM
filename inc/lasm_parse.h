@@ -35,7 +35,7 @@ typedef struct
 
 parseStatus parseLine(char *instruction);
 
-// TODO : ADD EXTERNAL DIRECTIVE
+// TODO : ADD "extern" DIRECTIVE
 parseStatus parseOrigDirective(char *arguments);
 parseStatus parseFillDirective(char *arguments);
 parseStatus parseBlkwDirective(char *arguments);

@@ -6,6 +6,7 @@
 // OPCODES sorted in alphabetical increasing order
 char *opcodes[] = {"ADD", "AND", "BR", "BRn", "BRnp", "BRnz", "BRnzp", "BRp", "BRz", "BRzp", "GETC", "HALT", "IN", "JMP", "JSR", "JSRR",
  "LD", "LDI", "LDR", "LEA", "NOT", "OUT", "PUTS", "PUTSP", "RET", "RTI", "ST", "STI", "STR" , "TRAP"}; 
+
 // ASM Directives sorted in alphabetical increasing order
 char *asmDirectives[] = {".BLKW", ".END", ".FILL", ".ORIG", ".STRINGZ"}; 
 

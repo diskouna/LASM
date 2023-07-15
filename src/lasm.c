@@ -7,19 +7,19 @@
 #include "lasm_parse.h"
 #include "lasm_translate.h"
 
-static inline int  checkSyntax(int argc);
-static inline void printCorrectSyntax(char *programName);
+static inline int  checkSyntax(int argumentsCount, char *arguments[]);
+static inline void printCorrectSyntax();
 
-int firstPass(char *inputFileName);
-int secondPass(char *outputFileName);
-
+int firstPass(void);
+int secondPass(void);
+// TOFO : add extern variable in .c files that need it
 int main(int argc, char * argv[])
 {
-    int isSyntaxCorrect = checkSyntax(argc);
+    int isSyntaxCorrect = checkSyntax(argc, argv);
     if (isSyntaxCorrect) {
-        int doesFirstPassSucceed = firstPass(argv[1]);
+        int doesFirstPassSucceed = firstPass();
         if (doesFirstPassSucceed) {      
-            secondPass(argv[2]);
+            secondPass();
         } else {                    
             printErrorMessage("First pass failed\n"); 
             writeErrorMessageInFile(); // ?? not here 
@@ -27,22 +27,33 @@ int main(int argc, char * argv[])
         }
         closeAllFiles();   // not here  
     } else {
-        printErrorMessage("Incorrect syntax\n"); 
-        printCorrectSyntax(argv[0]);
+        printErrorMessage("incorrect syntax\n"); 
+        printCorrectSyntax();
     }
     return EXIT_SUCCESS;
 }
 
-static inline void printCorrectSyntax(char *programName)
+static inline void printCorrectSyntax()
 {
-    printf("syntax : %s input.asm output.obj\n", programName);
-}
-static inline int checkSyntax(int argumentsCount)
-{
-    return (argumentsCount == 3);
+    printf("usage : %s input.asm [output.obj]\n", programName);
 }
 
-int firstPass(char *inputFileName)
+static inline int checkSyntax(int argumentsCount, char *arguments[])
+{
+    programName = arguments[0];
+    if (argumentsCount == 2 || argumentsCount == 3) {
+        inputFileName = arguments[1];
+        if (argumentsCount == 3) 
+            outputFileName = arguments[2];
+        else 
+           // default output file name
+            outputFileName = "a.obj"; 
+        return 1;
+    } 
+    return 0;
+}
+
+int firstPass(void)
 {
     openFile(inputFileName);
     createSymbolTableFile();
@@ -61,7 +72,7 @@ int firstPass(char *inputFileName)
             status = parseLine(line);
             if (status.type == SUCCESS) continue;
             if (status.type != END_OF_FILE_REACH) {
-                printErrorMessage("at line %d : ", lineCount);
+                printErrorMessage("%s:%d: ", inputFileName, lineCount);
                 printParseErrorMessage(status);
                 return 0;
             }
@@ -69,45 +80,39 @@ int firstPass(char *inputFileName)
         }
     }  
     if (status.type != END_OF_FILE_REACH) {
-        printErrorMessage("End of file [.END] not reach \n");
+        printErrorMessage("End of file [.END] not reach\n");
         return 0;
     }
     return 1;
 }
 
 // execute secondPass() if only if firstPass() was succesfull
-int secondPass(char *outputFileName)
+int secondPass(void)
 {
-
-    output = fopen(outputFileName, "wb");
-    if (output == NULL) {
-        fprintf(stderr, "Cannot create the objet file : %s", outputFileName);
-        exit(EXIT_FAILURE);
-    }  
+    createObjectFile(outputFileName);
     rewind(intermediateFile);
     while (!feof(intermediateFile)) {
         getNextLineFromFile(intermediateFile);
         programCounter++;
+        translateStatus status; 
         // TODO
         // verbose translation --> option 
-        // printf("%04hx : %s \n", programCounter, line);
-        /* translate the line */
-        //uint16_t instruction = 0;
+        // translateLine() function
         char *token = getFirstToken(line);
         char *arguments;
         while (token != NULL) {
-            //TODO : deep analysis of this loop 
-            // make sure it not exit too soon
             if (isStringValidAsmDirective(token))  {
                 directiveType type = getDirectiveType(token);
                 arguments = getArguments();
-                addDirectiveToOutputFile[type](arguments);
-                // TODO : status --> label 
+                status = translateDirectiveIntoOutputFile[type](arguments);
+                if (status==TRANSLATE_FAILURE) 
+                    return 0;
             } else if (isStringValidOpcode(token)) {
                 instructionType type = getInstructionType(token);
                 arguments = getArguments();
-                addInstructionToOutputFile[type](arguments);
-                // TODO : status 
+                status = translateInstructionIntoOutputFile[type](arguments);
+                if (status==TRANSLATE_FAILURE) 
+                    return 0; 
             } 
             token = getNextToken();   
         } 

@@ -3,13 +3,17 @@
 #include "lasm_file.h"
 #include "lasm_hash.h"
 
+// Global variables used by different file
 char line[LINE_MAX]; // buffer line
 
+char *programName, *inputFileName, *outputFileName;
 FILE *input, *symbolTable, *intermediateFile, *output;
+
+int programCounterStart = UNDEFINED_ADDRESS;
 unsigned int instructionCount;
-int programCounterStart = -1;
 uint16_t programCounter;  // address of the **next** instruction to be executed
                           // not the current one 
+
 
 // A word is a 16 bit value
 static inline uint16_t swapByteInWord(uint16_t n)
@@ -57,6 +61,15 @@ void createSymbolTableFile()
     } 
 }
 
+void createObjectFile(char *outputFileName) 
+{
+    output = fopen(outputFileName, "wb");
+    if (output == NULL) {
+        fprintf(stderr, "Cannot create the objet file : %s", outputFileName);
+        exit(EXIT_FAILURE);
+    }
+}
+
 void writeErrorMessageInFile() {
     fprintf(intermediateFile, "    Oops!!!    An error occurs   \n");
     fprintf(symbolTable, "|         Oops!!!    An error occurs          |\n");
@@ -71,13 +84,12 @@ void closeAllFiles() // out ???
     fclose(input);
 }
 
-// 1 word is 16 bits
-// rename writeWordToBinaryFile()
-size_t writeWordToBinaryFile(FILE *binaryFile, uint16_t value)
+// 1 word == 16 bits
+int writeWordToObjectFile(FILE *binaryFile, uint16_t value)
 {                                                      // the representation of 1 in 16 bits
     if (isLittleEndian())
         value = swapByteInWord(value);
-    return fwrite(&value, sizeof(uint16_t), 1, binaryFile);
+    return (fwrite(&value, sizeof(uint16_t), 1, binaryFile) == 1);
 }
 
 int isEndOfFileReach(FILE *file)

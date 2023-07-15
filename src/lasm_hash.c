@@ -17,29 +17,31 @@ static inline char *dupplicateString(char *s)
     strcpy(d, s);
     return d;
 }
-// maximum length supported ?? 
+ 
 uint16_t hashString(char *str)
 {
-    unsigned long int hashvalue = 0UL;
-    for (; *str != '\0'; str++) 
-        hashvalue = *str + 31 * hashvalue;
-    return (uint16_t)(hashvalue % HASH_TABLE_SIZE);
+    size_t hashValue = 0UL;
+    for (; *str != '\0'; str++) {
+        hashValue  = *str + 31 * hashValue;
+        hashValue %= HASH_TABLE_SIZE;
+    }
+    return (uint16_t)hashValue; 
 }
 // addItemToHashTable() : allocate memory in the heap.
 // Deallocation is done in deleteHashTable()
 hashAddStatus addItemToHashTable(char *label, uint16_t address)
 {
-    uint16_t hashvalue = hashString(label);
+    uint16_t hashValue = hashString(label);
     struct item *item = (struct item*)malloc(sizeof(*item));
     if (item == NULL) return HASH_ADD_MEMORY_ALLOCATION_ERROR;    
     item->label = dupplicateString(label);
     item->address = address;
     item->next = NULL;
-    if (hashTable[hashvalue] == NULL) {   // No collision 
-        hashTable[hashvalue] = item;
+    if (hashTable[hashValue] == NULL) {   // No collision 
+        hashTable[hashValue] = item;
     } else {                              // Collision 
         struct item *tail;
-        for (tail = hashTable[hashvalue]; tail->next != NULL; tail = tail->next) 
+        for (tail = hashTable[hashValue]; tail->next != NULL; tail = tail->next) 
             if (strcmp(tail->label, label) == 0)  return HASH_ADD_DUPPLICATE_LABEL;
         if (strcmp(tail->label, label) == 0)      return HASH_ADD_DUPPLICATE_LABEL;    
         tail->next = item;

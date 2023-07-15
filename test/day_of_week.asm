@@ -1,6 +1,6 @@
 ;;  LAB 3 : Days of the week
 
-        .ORIG x3000
+a        .ORIG x3000
 
 START   LEA R0, PROMPT
         TRAP x22        ; PUTS

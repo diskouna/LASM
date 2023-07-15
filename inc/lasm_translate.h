@@ -22,44 +22,49 @@ enum {
     TRAP_OPCODE
 };
 
-void addAddInstructionToOutputFile(char *arguments);
-void addAndInstructionToOutputFile(char *arguments);
-void addBrsInstructionToOutputFile(char *arguments, uint16_t nzpValue);
-void addBrInstructionToOutputFile(char *arguments);
-void addBrnInstructionToOutputFile(char *arguments);
-void addBrzInstructionToOutputFile(char *arguments);
-void addBrpInstructionToOutputFile(char *arguments);
-void addBrnpInstructionToOutputFile(char *arguments);
-void addBrnzInstructionToOutputFile(char *arguments);
-void addBrzpInstructionToOutputFile(char *arguments);
-void addBrnzpInstructionToOutputFile(char *arguments);
-void addJsrInstructionToOutputFile(char *arguments);
-void addJsrrInstructionToOutputFile(char *arguments);
-void addJmpInstructionToOutputFile(char *arguments);
-void addRetInstructionToOutputFile(char *arguments);
-void addRtiInstructionToOutputFile(char *arguments);
-void addLdInstructionToOutputFile(char *arguments);
-void addLdiInstructionToOutputFile(char *arguments);
-void addLeaInstructionToOutputFile(char *arguments);
-void addStInstructionToOutputFile(char *arguments);
-void addStiInstructionToOutputFile(char *arguments);
-void addNotInstructionToOutputFile(char *arguments);
-void addLdrInstructionToOutputFile(char *arguments);
-void addStrInstructionToOutputFile(char *arguments);
-void addTrapInstructionToOutputFile(char *arguments);
-void addGetcInstructionToOutputFile(char *arguments);
-void addHaltInstructionToOutputFile(char *arguments);
-void addInInstructionToOutputFile(char *arguments);
-void addOutInstructionToOutputFile(char *arguments);
-void addPutsInstructionToOutputFile(char *arguments);
-void addPutspInstructionToOutputFile(char *arguments);
-extern void (*addInstructionToOutputFile[])(char *arguments);
+typedef enum {
+    TRANSLATE_FAILURE = 0,
+    TRANSLATE_SUCCESS,
+} translateStatus;
 
-void addOrigDirectiveToOutputFile(char *arguments);
-void addFillDirectiveToOutputFile(char *arguments);
-void addBlkwDirectiveToOutputFile(char *arguments);
-void addStringzDirectiveToOutputFile(char *arguments);
-void addEndDirectiveToOutputFile(char *arguments);
-extern void (*addDirectiveToOutputFile[])(char *arguments); 
+translateStatus translateAddInstructionIntoOutputFile(char *arguments);
+translateStatus translateAndInstructionIntoOutputFile(char *arguments);
+translateStatus translateBrsInstructionIntoOutputFile(char *arguments, uint16_t nzpValue);
+translateStatus translateBrInstructionIntoOutputFile(char *arguments);
+translateStatus translateBrnInstructionIntoOutputFile(char *arguments);
+translateStatus translateBrzInstructionIntoOutputFile(char *arguments);
+translateStatus translateBrpInstructionIntoOutputFile(char *arguments);
+translateStatus translateBrnpInstructionIntoOutputFile(char *arguments);
+translateStatus translateBrnzInstructionIntoOutputFile(char *arguments);
+translateStatus translateBrzpInstructionIntoOutputFile(char *arguments);
+translateStatus translateBrnzpInstructionIntoOutputFile(char *arguments);
+translateStatus translateJsrInstructionIntoOutputFile(char *arguments);
+translateStatus translateJsrrInstructionIntoOutputFile(char *arguments);
+translateStatus translateJmpInstructionIntoOutputFile(char *arguments);
+translateStatus translateRetInstructionIntoOutputFile(char *arguments);
+translateStatus translateRtiInstructionIntoOutputFile(char *arguments);
+translateStatus translateLdInstructionIntoOutputFile(char *arguments);
+translateStatus translateLdiInstructionIntoOutputFile(char *arguments);
+translateStatus translateLeaInstructionIntoOutputFile(char *arguments);
+translateStatus translateStInstructionIntoOutputFile(char *arguments);
+translateStatus translateStiInstructionIntoOutputFile(char *arguments);
+translateStatus translateNotInstructionIntoOutputFile(char *arguments);
+translateStatus translateLdrInstructionIntoOutputFile(char *arguments);
+translateStatus translateStrInstructionIntoOutputFile(char *arguments);
+translateStatus translateTrapInstructionIntoOutputFile(char *arguments);
+translateStatus translateGetcInstructionIntoOutputFile(char *arguments);
+translateStatus translateHaltInstructionIntoOutputFile(char *arguments);
+translateStatus translateInInstructionIntoOutputFile(char *arguments);
+translateStatus translateOutInstructionIntoOutputFile(char *arguments);
+translateStatus translatePutsInstructionIntoOutputFile(char *arguments);
+translateStatus translatePutspInstructionIntoOutputFile(char *arguments);
+extern translateStatus (*translateInstructionIntoOutputFile[])(char *arguments);
+
+translateStatus translateOrigDirectiveIntoOutputFile(char *arguments);
+translateStatus translateFillDirectiveIntoOutputFile(char *arguments);
+translateStatus translateBlkwDirectiveIntoOutputFile(char *arguments);
+translateStatus translateStringzDirectiveIntoOutputFile(char *arguments);
+translateStatus translateEndDirectiveIntoOutputFile(char *arguments);
+extern translateStatus (*translateDirectiveIntoOutputFile[])(char *arguments); 
 
 #endif // __LASM_TRANSLATE__

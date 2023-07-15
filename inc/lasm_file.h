@@ -7,34 +7,38 @@
 
 #include "lasm_hash.h"
 
-// LINE BUFFER 
-#define LINE_MAX 200
-extern char line[LINE_MAX]; // buffer line
 
+
+extern char *programName, *inputFileName, *outputFileName;
 extern FILE *input, *symbolTable, *intermediateFile, *output;
-extern unsigned int instructionCount;
+
+#define UNDEFINED_ADDRESS -1
 extern int programCounterStart;
 extern uint16_t programCounter;  // address of the **next** instruction to be executed
                                  // not the current one 
-  
-size_t writeWordToBinaryFile(FILE *binaryFile, uint16_t value);
+extern unsigned int instructionCount;
 
+void openFile(char *fileName);
+int isEndOfFileReach(FILE *file);
+void closeAllFiles();
+void createSymbolTableFile();
 void writeSymbolTableHeader();
 void writeSymbolTableFooter();
-void writeErrorMessageInFile();
-
-int isEndOfFileReach(FILE *file);
+hashAddStatus addLabelToSymbolTable(char *label);
+void createObjectFile(char *outputFileName);
+int writeWordToObjectFile(FILE *binaryFile, uint16_t value);
 void createIntermediateFile();
-void createSymbolTableFile();
-void openFile(char *fileName);
-void closeAllFiles();
+void writeErrorMessageInFile();
 void printErrorMessage(const char *message,...);
 
+
+// LINE BUFFER 
+#define LINE_MAX 200
+extern char line[LINE_MAX]; 
+
+// write into "line" buffer 
 void getNextLineFromFile(FILE *file);
-//void removeCommentInLine(char *line);
+// write into "line" buffer
 void addLineToFile(FILE *file, char *line);
-
-
-hashAddStatus addLabelToSymbolTable(char *label);
 
 #endif // __LASM_FILE__

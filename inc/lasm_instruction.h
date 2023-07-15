@@ -6,8 +6,7 @@
 
 typedef enum { 
     UNDEFINED_INSTRUCTION = -1,
-    // sorted 
-
+    /* sorted in alphabetical order */
     ADD_INSTRUCTION, 
     AND_INSTRUCTION, 
     BR_INSTRUCTION, 
@@ -44,8 +43,7 @@ instructionType getInstructionType(char *opcode);
 
 typedef enum {
     UNDEFINED_DIRECTIVE = -1,
-    // sorted 
-
+    /* sorted in alphabetical order */
     BLKW_DIRECTIVE,
     END_DIRECTIVE,
     FILL_DIRECTIVE,
